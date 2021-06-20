@@ -4,6 +4,7 @@ namespace Elementor\Wps\Widgets;
 
 use Elementor\Widget_Base;
 use Elementor\Controls_Manager;
+use QuickBuy;
 
 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
@@ -13,6 +14,13 @@ if (!defined('ABSPATH')) exit; // Exit if accessed directly
  */
 class Wps_Featured_Deals extends \Elementor\Widget_Base
 {
+
+    /**
+     * How show product in render
+     *
+     * @var int
+     */
+    private $countProduct = 10;
 
     /**
      * Retrieve the widget name.
@@ -77,14 +85,14 @@ class Wps_Featured_Deals extends \Elementor\Widget_Base
 
     public function get_script_depends()
     {
-        $scripts = ['elementor-wps-addons'];
+        $scripts = ['elementor-wps-featured-deals'];
 
         return $scripts;
     }
 
     public function get_style_depends()
     {
-        $styles = ['elementor-wps-addons'];
+        $styles = ['elementor-wps-featured-deals'];
 
         return $styles;
     }
@@ -104,18 +112,22 @@ class Wps_Featured_Deals extends \Elementor\Widget_Base
         /**
          * get all product for select list
          */
+
         $args = [
             'orderby' => 'name',
             'order' => 'DESC',
             'numberposts' => -1,
             'post_status' => 'published',
         ];
+
         $optionProductFeatured = ['' => 'Empty'];
         $optionProductFeaturedVariant = ['' => 'Empty'];
         $products = wc_get_products($args);
 
         foreach ($products as $product) {
-            $optionProductFeatured[$product->get_id()] = $product->get_id() . ' - ' . $product->get_name();
+            if(is_object($product)) {
+                $optionProductFeatured[$product->get_id()] = $product->get_id() . ' - ' . $product->get_name();
+            }
         }
 
         foreach ($products as $productVariant) {
@@ -123,20 +135,50 @@ class Wps_Featured_Deals extends \Elementor\Widget_Base
                 $variation_ids = $productVariant->get_visible_children();
                 foreach ($variation_ids as $variation_id) {
                     $variation = wc_get_product($variation_id);
-                    $optionProductFeaturedVariant[$variation_id] = $variation->get_id() . ' - ' . $variation->get_name();
+                    if(is_object($variation)) {
+                        $optionProductFeaturedVariant[$variation_id] = $variation->get_id() . ' - ' . $variation->get_name();
+                    }
                 }
             }
         }
 
+        $this->start_controls_section(
+            'section_config',
+            [
+                'label' => __('Config', 'elementor-wps-featured-deals'),
+            ]
+        );
+
+        $this->add_control(
+            'featured_deals_title',
+            [
+                'label' => __('Title', 'elementor-wps-featured-deals'),
+                'type' => \Elementor\Controls_Manager::TEXT,
+                'default' => __('Default title', 'elementor-wps-featured-deals'),
+                'placeholder' => __('Featured deals title', 'elementor-wps-featured-deals'),
+            ]
+        );
+
+        $this->add_control(
+            'featured_deals_day_title',
+            [
+                'label' => __('Title day', 'elementor-wps-featured-deals'),
+                'type' => \Elementor\Controls_Manager::TEXT,
+                'default' => __('Daily deal', 'elementor-wps-featured-deals'),
+            ]
+        );
+
+        $this->end_controls_section();
+
 
         /**
-         * BestSellers
+         * Featured
          */
 
         $this->start_controls_section(
             'section_content',
             [
-                'label' => __('featured deals', 'elementor-wps-featured-deals'),
+                'label' => __('Featured deals', 'elementor-wps-featured-deals'),
             ]
         );
 
@@ -148,284 +190,103 @@ class Wps_Featured_Deals extends \Elementor\Widget_Base
             ]
         );
 
-        $this->add_control(
-            'hr0',
-            [
-                'type' => \Elementor\Controls_Manager::DIVIDER,
-            ]
-        );
+        for ($fd = 1; $fd <= $this->countProduct; $fd++) {
+            $this->add_control(
+                'important_note_' . $fd,
+                [
+                    'type' => \Elementor\Controls_Manager::RAW_HTML,
+                    'raw' => __('Select ' . $fd . ' product or variant', 'elementor-wps-featured-deals'),
+                ]
+            );
 
-        $this->add_control(
-            'featured_deals_title',
-            [
-                'label' => __( 'Title', 'elementor-wps-featured-deals' ),
-                'type' => \Elementor\Controls_Manager::TEXT,
-                'default' => __( 'Default title', 'elementor-wps-featured-deals' ),
-                'placeholder' => __( 'Featured deals title', 'elementor-wps-featured-deals' ),
-            ]
-        );
+            $this->add_control(
+                'id_productFeatured_' . $fd,
+                [
+                    'label' => __('Select product ' . $fd, 'elementor-wps-featured-deals'),
+                    'type' => Controls_Manager::SELECT2,
+                    'options' => $optionProductFeatured,
+                    'default' => __('Empty', 'elementor-wps-featured-deals'),
+                ]
+            );
 
-        $this->add_control(
-            'important_note_1',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('Select first product or variant', 'elementor-wps-featured-deals'),
-            ]
-        );
+            $this->add_control(
+                'or_note_' . $fd,
+                [
+                    'type' => \Elementor\Controls_Manager::RAW_HTML,
+                    'raw' => __('OR', 'elementor-wps-featured-deals'),
+                ]
+            );
 
-        $this->add_control(
-            'id_productFeatured_1',
-            [
-                'label' => __('Select product 1', 'elementor-wps-featured-deals'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductFeatured,
-                'default' => __('Empty', 'elementor-wps-featured-deals'),
-            ]
-        );
+            $this->add_control(
+                'id_variant_' . $fd,
+                [
+                    'label' => __('Select variant ' . $fd, 'elementor-wps-featured-deals'),
+                    'type' => Controls_Manager::SELECT2,
+                    'options' => $optionProductFeaturedVariant,
+                    'default' => __('Empty', 'elementor-wps-featured-deals'),
+                ]
+            );
 
-        $this->add_control(
-            'or_note_1',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('OR', 'elementor-wps-featured-deals'),
-            ]
-        );
+            $this->add_control(
+                'product_sale_all_variant_' . $fd,
+                [
+                    'label' => __( 'Sale price over for all variant?', 'elementor-wps' ),
+                    'type' => \Elementor\Controls_Manager::SELECT,
+                    'default' => '0',
+                    'options' => [
+                        '0'  => __( 'No', 'elementor-wps' ),
+                        '1' => __( 'Yes', 'elementor-wps' ),
+                    ],
+                ]
+            );
 
-        $this->add_control(
-            'id_variant_1',
-            [
-                'label' => __('Select variant 1', 'elementor-wps-featured-deals'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductFeaturedVariant,
-                'default' => __('Empty', 'elementor-wps-featured-deals'),
-            ]
-        );
+            $this->add_control(
+                'product_sale_old_' . $fd,
+                [
+                    'label' => __('Sale price ' . $fd, 'elementor-wps'),
+                    'type' => \Elementor\Controls_Manager::TEXT,
+                ]
+            );
 
+            $this->add_control(
+                'product_sale_' . $fd,
+                [
+                    'label' => __('Sale price over ' . $fd, 'elementor-wps'),
+                    'type' => \Elementor\Controls_Manager::TEXT,
+                ]
+            );
 
-        $this->add_control(
-            'hr2',
-            [
-                'type' => \Elementor\Controls_Manager::DIVIDER,
-            ]
-        );
+            $this->add_control(
+                'product_coupon_' . $fd,
+                [
+                    'label' => __('Coupon product ' . $fd, 'elementor-wps'),
+                    'type' => \Elementor\Controls_Manager::TEXT,
+                ]
+            );
 
+            $this->add_control(
+                'product_description_' . $fd,
+                [
+                    'label' => __('Description product ' . $fd, 'elementor-wps'),
+                    'type' => \Elementor\Controls_Manager::TEXTAREA,
+                ]
+            );
 
-        $this->add_control(
-            'important_note_2',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('Select second product or variant', 'elementor-wps-featured-deals'),
-            ]
-        );
+            $this->add_control(
+                'product_image_' . $fd,
+                [
+                    'label' => __('Choose Image for product ' . $fd, 'elementor-wps'),
+                    'type' => \Elementor\Controls_Manager::MEDIA,
+                ]
+            );
 
-        $this->add_control(
-            'id_productFeatured_2',
-            [
-                'label' => __('Select product 2', 'elementor-wps-featured-deals'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductFeatured,
-                'default' => __('Empty', 'elementor-wps-featured-deals'),
-            ]
-        );
-
-        $this->add_control(
-            'or_note_2',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('OR', 'elementor-wps-featured-deals'),
-            ]
-        );
-
-        $this->add_control(
-            'id_variant_2',
-            [
-                'label' => __('Select variant 2', 'elementor-wps-featured-deals'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductFeaturedVariant,
-                'default' => __('Empty', 'elementor-wps-featured-deals'),
-            ]
-        );
-
-
-        $this->add_control(
-            'hr3',
-            [
-                'type' => \Elementor\Controls_Manager::DIVIDER,
-            ]
-        );
-
-
-        $this->add_control(
-            'important_note_3',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('Select the third product or variant', 'elementor-wps-featured-deals'),
-            ]
-        );
-
-        $this->add_control(
-            'id_productFeatured_3',
-            [
-                'label' => __('Select product 3', 'elementor-wps-featured-deals'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductFeatured,
-                'default' => __('Empty', 'elementor-wps-featured-deals'),
-            ]
-        );
-
-        $this->add_control(
-            'or_note_3',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('OR', 'elementor-wps-featured-deals'),
-            ]
-        );
-
-        $this->add_control(
-            'id_variant_3',
-            [
-                'label' => __('Select variant 3', 'elementor-wps-featured-deals'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductFeaturedVariant,
-                'default' => __('Empty', 'elementor-wps-featured-deals'),
-            ]
-        );
-
-
-        $this->add_control(
-            'hr4',
-            [
-                'type' => \Elementor\Controls_Manager::DIVIDER,
-            ]
-        );
-
-
-        $this->add_control(
-            'important_note_4',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('Select the fourth product or variant', 'elementor-wps-featured-deals'),
-            ]
-        );
-
-        $this->add_control(
-            'id_productFeatured_4',
-            [
-                'label' => __('Select product 4', 'elementor-wps-featured-deals'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductFeatured,
-                'default' => __('Empty', 'elementor-wps-featured-deals'),
-            ]
-        );
-
-        $this->add_control(
-            'or_note_4',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('OR', 'elementor-wps-featured-deals'),
-            ]
-        );
-
-        $this->add_control(
-            'id_variant_4',
-            [
-                'label' => __('Select variant 4', 'elementor-wps-featured-deals'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductFeaturedVariant,
-                'default' => __('Empty', 'elementor-wps-featured-deals'),
-            ]
-        );
-
-
-
-        $this->add_control(
-            'hr5',
-            [
-                'type' => \Elementor\Controls_Manager::DIVIDER,
-            ]
-        );
-
-
-        $this->add_control(
-            'important_note_5',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('Select the fourth product or variant', 'elementor-wps-featured-deals'),
-            ]
-        );
-
-        $this->add_control(
-            'id_productFeatured_5',
-            [
-                'label' => __('Select product 5', 'elementor-wps-featured-deals'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductFeatured,
-                'default' => __('Empty', 'elementor-wps-featured-deals'),
-            ]
-        );
-
-        $this->add_control(
-            'or_note_5',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('OR', 'elementor-wps-featured-deals'),
-            ]
-        );
-
-        $this->add_control(
-            'id_variant_5',
-            [
-                'label' => __('Select variant 5', 'elementor-wps-featured-deals'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductFeaturedVariant,
-                'default' => __('Empty', 'elementor-wps-featured-deals'),
-            ]
-        );
-
-
-        $this->add_control(
-            'hr6',
-            [
-                'type' => \Elementor\Controls_Manager::DIVIDER,
-            ]
-        );
-
-
-        $this->add_control(
-            'important_note_6',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('Select the fourth product or variant', 'elementor-wps-featured-deals'),
-            ]
-        );
-
-        $this->add_control(
-            'id_productFeatured_6',
-            [
-                'label' => __('Select product 6', 'elementor-wps-featured-deals'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductFeatured,
-                'default' => __('Empty', 'elementor-wps-featured-deals'),
-            ]
-        );
-
-        $this->add_control(
-            'or_note_6',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('OR', 'elementor-wps-featured-deals'),
-            ]
-        );
-
-        $this->add_control(
-            'id_variant_6',
-            [
-                'label' => __('Select variant 6', 'elementor-wps-featured-deals'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductFeaturedVariant,
-                'default' => __('Empty', 'elementor-wps-featured-deals'),
-            ]
-        );
+            $this->add_control(
+                'hr' . $fd,
+                [
+                    'type' => \Elementor\Controls_Manager::DIVIDER,
+                ]
+            );
+        }
 
         $this->end_controls_section();
 
@@ -445,94 +306,133 @@ class Wps_Featured_Deals extends \Elementor\Widget_Base
         $settings = $this->get_settings_for_display();
 
         /**
-         * Best sellers data
+         * Featured deals data
          */
-        $idProductFeatured_1 = (!empty($settings['id_productFeatured_1']) && $settings['id_productFeatured_1'] != 'Empty') ? $settings['id_productFeatured_1'] : $settings['id_variant_1'];
-        $idProductFeatured_2 = (!empty($settings['id_productFeatured_2']) && $settings['id_productFeatured_2'] != 'Empty') ? $settings['id_productFeatured_2'] : $settings['id_variant_2'];
-        $idProductFeatured_3 = (!empty($settings['id_productFeatured_3']) && $settings['id_productFeatured_3'] != 'Empty') ? $settings['id_productFeatured_3'] : $settings['id_variant_3'];
-        $idProductFeatured_4 = (!empty($settings['id_productFeatured_4']) && $settings['id_productFeatured_4'] != 'Empty') ? $settings['id_productFeatured_4'] : $settings['id_variant_4'];
-        $idProductFeatured_5 = (!empty($settings['id_productFeatured_5']) && $settings['id_productFeatured_5'] != 'Empty') ? $settings['id_productFeatured_5'] : $settings['id_variant_5'];
-        $idProductFeatured_6 = (!empty($settings['id_productFeatured_6']) && $settings['id_productFeatured_6'] != 'Empty') ? $settings['id_productFeatured_6'] : $settings['id_variant_6'];
+        for ($d = 1; $d <= $this->countProduct; $d++) {
+            if((!empty($settings['id_productFeatured_'.$d]) && $settings['id_productFeatured_'.$d] != 'Empty')){
+                ${"idProductFeatured_$d"} = $settings['id_productFeatured_'.$d];
+                ${"checkVariant_$d"} = false;
+            }else{
+                ${"idProductFeatured_$d"} = $settings['id_variant_'.$d];
+                ${"checkVariant_$d"} = true;
+            }
+            //${"idProductFeatured_$d"} = (!empty($settings['id_productFeatured_'.$d]) && $settings['id_productFeatured_'.$d] != 'Empty') ? $settings['id_productFeatured_'.$d] : $settings['id_variant_'.$d];
+            ${"productFeatured_$d"} = wc_get_product(${"idProductFeatured_$d"});
+            ${"productUrl$d"} = (!empty(${"productFeatured_$d"})) ? ${"productFeatured_$d"}->get_permalink() : '';
+            ${"imageUrl$d"} = (!empty($settings['product_image_'.$d]['url'])) ? $settings['product_image_'.$d]['url'] : wp_get_attachment_url(${"productFeatured_$d"}->image_id);
+            ${"priceProductFeatured$d"} = (!empty(${"productFeatured_$d"}->regular_price)) ? ${"productFeatured_$d"}->regular_price : ${"productFeatured_$d"}->price;
+            ${"percent$d"} = (!empty(${"productFeatured_$d"}->sale_price)) ? (${"priceProductFeatured$d"} != 0) ? round(((${"priceProductFeatured$d"} - ${"productFeatured_$d"}->sale_price) / ${"priceProductFeatured$d"}) * 100) : null : null;
+        }
 
-        $productFeatured_1 = wc_get_product($idProductFeatured_1);
-        $productFeatured_2 = wc_get_product($idProductFeatured_2);
-        $productFeatured_3 = wc_get_product($idProductFeatured_3);
-        $productFeatured_4 = wc_get_product($idProductFeatured_4);
-        $productFeatured_5 = wc_get_product($idProductFeatured_5);
-        $productFeatured_6 = wc_get_product($idProductFeatured_6);
-
-        $productUrl1 = (!empty($productFeatured_1)) ? $productFeatured_1->get_permalink() : '';
-        $productUrl2 = (!empty($productFeatured_2)) ? $productFeatured_2->get_permalink() : '';
-        $productUrl3 = (!empty($productFeatured_3)) ? $productFeatured_3->get_permalink() : '';
-        $productUrl4 = (!empty($productFeatured_4)) ? $productFeatured_4->get_permalink() : '';
-        $productUrl5 = (!empty($productFeatured_5)) ? $productFeatured_5->get_permalink() : '';
-        $productUrl6 = (!empty($productFeatured_6)) ? $productFeatured_6->get_permalink() : '';
-
-        $imageUrl1 = wp_get_attachment_url($productFeatured_1->image_id);
-        $imageUrl2 = wp_get_attachment_url($productFeatured_2->image_id);
-        $imageUrl3 = wp_get_attachment_url($productFeatured_3->image_id);
-        $imageUrl4 = wp_get_attachment_url($productFeatured_4->image_id);
-        $imageUrl5 = wp_get_attachment_url($productFeatured_5->image_id);
-        $imageUrl6 = wp_get_attachment_url($productFeatured_6->image_id);
-
-        $priceProductFeatured1 = (!empty($productFeatured_1->regular_price)) ? $productFeatured_1->regular_price : $productFeatured_1->price;
-        $priceProductFeatured2 = (!empty($productFeatured_2->regular_price)) ? $productFeatured_2->regular_price : $productFeatured_2->price;
-        $priceProductFeatured3 = (!empty($productFeatured_3->regular_price)) ? $productFeatured_3->regular_price : $productFeatured_3->price;
-        $priceProductFeatured4 = (!empty($productFeatured_4->regular_price)) ? $productFeatured_4->regular_price : $productFeatured_4->price;
-        $priceProductFeatured5 = (!empty($productFeatured_5->regular_price)) ? $productFeatured_5->regular_price : $productFeatured_5->price;
-        $priceProductFeatured6 = (!empty($productFeatured_6->regular_price)) ? $productFeatured_6->regular_price : $productFeatured_6->price;
-
-        $percent1 = (!empty($productFeatured_1->sale_price)) ? ($priceProductFeatured1 != 0) ? ceil($productFeatured_1->sale_price * 100 / $priceProductFeatured1) : null : null;
-        $percent2 = (!empty($productFeatured_2->sale_price)) ? ($priceProductFeatured2 != 0) ? ceil($productFeatured_2->sale_price * 100 / $priceProductFeatured2) : null : null;
-        $percent3 = (!empty($productFeatured_3->sale_price)) ? ($priceProductFeatured3 != 0) ? ceil($productFeatured_3->sale_price * 100 / $priceProductFeatured3) : null : null;
-        $percent4 = (!empty($productFeatured_4->sale_price)) ? ($priceProductFeatured4 != 0) ? ceil($productFeatured_4->sale_price * 100 / $priceProductFeatured4) : null : null;
-        $percent5 = (!empty($productFeatured_5->sale_price)) ? ($priceProductFeatured5 != 0) ? ceil($productFeatured_5->sale_price * 100 / $priceProductFeatured5) : null : null;
-        $percent6 = (!empty($productFeatured_6->sale_price)) ? ($priceProductFeatured6 != 0) ? ceil($productFeatured_6->sale_price * 100 / $priceProductFeatured6) : null : null;
-
-echo '<div class="wrapper-wps extended">
+        echo '<div class="wrapper-wps extended">
     <div id="featured-products-section" class="homepage-section-wps">
-        <h2 class="featured-deals-header wps-homepage-section-wps-header">'.$settings["featured_deals_title"].'</h2>
+        <h2 class="featured-deals-header wps-homepage-section-wps-header">' . $settings["featured_deals_title"] . '</h2>
 
         <ul class="productGrid grid-wps grid-wps--uniform" data-product-type="featured">';
 
-for($i = 1; $i <= 6; $i++){
+        for ($i = 1; $i <= $this->countProduct; $i++) {
+            $productCoupon = (!empty($settings['product_coupon_' . $i])) ? '<label>Coupon for sale:<input type="text" value="' . $settings['product_coupon_' . $i] . '"></label>' : '';
 
-       echo '
+            /**
+             * If sale price product not equal sale price over setting, sale over price setting not empty and not zero
+             * update sale if exist over sale in module
+             * if check "sale all variant" then update all variant
+             */
+            if ((${"productFeatured_$i"}->sale_price != $settings['product_sale_' . $i]) &&
+                !empty($settings['product_sale_' . $i]) &&
+                $settings['product_sale_' . $i] != 0
+            ) {
+                if ($settings['product_sale_all_variant_' . $i] == 1 && ${"checkVariant_$i"} == true) {
+
+                    $variationSelected = wc_get_product(${"productFeatured_$i"});
+                    $parentProduct = wc_get_product($variationSelected->get_parent_id());
+                    $allVariation = $parentProduct->get_children();
+
+                    foreach ($allVariation as $variant) {
+                        $variant = wc_get_product($variant);
+                        $variant->set_sale_price($settings['product_sale_' . $i]);
+                        $variant->save();
+                    }
+                } else {
+                    ${"productFeatured_$i"}->set_sale_price($settings['product_sale_' . $i]);
+                    ${"productFeatured_$i"}->save();
+                }
+            }
+
+            /**
+             * If over sale empty and old product exist
+             * then restore old sale price
+             * if check "sale all variant" then update all variant
+             */
+            if(empty($settings['product_sale_' . $i]) && !empty($settings['product_sale_old_' . $i])){
+                if ($settings['product_sale_all_variant_' . $i] == 1 && ${"checkVariant_$i"} == true) {
+
+                    $variationSelected = wc_get_product(${"productFeatured_$i"});
+                    $parentProduct = wc_get_product($variationSelected->get_parent_id());
+                    $allVariation = $parentProduct->get_children();
+
+                    foreach ($allVariation as $variant) {
+                        $variant = wc_get_product($variant);
+                        $variant->set_sale_price($settings['product_sale_old_' . $i]);
+                        $variant->save();
+                    }
+                } else {
+                    ${"productFeatured_$i"}->set_sale_price($settings['product_sale_old_' . $i]);
+                    ${"productFeatured_$i"}->save();
+                }
+            }
+
+            /**
+             * show product
+             */
+            echo '
     <li class="product grid-wps__item large-up--one-third">
                 <article class="card-wrapper-wps featured-card-container productCard data-event-type">
                     <div class="card-header">
                         <h2 class="featured-daily-title">
-                            <span class="featured-title-content">Daily deal</span>
+                            <span class="featured-title-content">' . $settings["featured_deals_day_title"] . '</span>
                         </h2>
                     </div>
                     <div class="card featured-card">
-                        <a href="'.  ${"productUrl$i"}.'"
+                        <a href="' . ${"productUrl$i"} . '"
                            data-event-type="product-click">
                             <figure class="card-figure">
                                 <div class="card-img-container">
-                                    <img src="'.  ${"imageUrl$i"}.'"
-                                         alt="Perfecter Iron 2-in-1 Hair Straightener &amp; Hot Round Brush product image"
+                                    <img src="' . ${"imageUrl$i"} . '"
+                                         alt="' . ${"productFeatured_$i"}->name . '"
                                          data-sizes="auto"
                                          class="card-image lazyautosizes lazyloaded" sizes="309px">
                                 </div>
                             </figure>
-                            <div class="card-body">
-                                <p class="h4 card-title">'.  ${"productFeatured_$i"}->name.'</p>
+                            <div class="card-body astra-shop-summary-wrap">
+                                <p class="h4 card-title">';
+            echo (!empty($settings["product_description_" . $i])) ? $settings["product_description_" . $i] : ${"productFeatured_$i"}->name;
+            echo '</p><p style="text-align:center">' . $productCoupon . '</p>';
 
+            /**
+             * If product selected then add button quick order
+             * Hook: woocommerce_featured_wps.
+             */
+            if (${"idProductFeatured_$i"} != 'Empty' && !empty(${"productFeatured_$i"})) {
+                global $product;
+                $product = ${"productFeatured_$i"};
+                do_action('woocommerce_featured_wps');
+            }
 
-                                <a href="'. ${"productUrl$i"}.'" class="button product_type_simple add_to_cart_button_wps "  rel="nofollow">
+            echo '
+
+                                <a href="' . ${"productUrl$i"} . '" class="button product_type_simple add_to_cart_button_wps "  rel="nofollow">
 <del><span class="woocommerce-Price-amount amount"
-><bdi>
-<span class="woocommerce-Price-currencySymbol">$</span> '. ${"priceProductFeatured$i"} .'</bdi></span></del> 
+><bdi class="regularprice">
+<span class="woocommerce-Price-currencySymbol">$</span> ' . ${"priceProductFeatured$i"} . '</bdi></span></del> 
 <ins>
 <span class="woocommerce-Price-amount amount">
-<bdi>
-<span class="woocommerce-Price-currencySymbol">$</span>'. ${"productFeatured_$i"}->sale_price.'
+<bdi class="saleprice">
+<span class="woocommerce-Price-currencySymbol">$</span>' . ${"productFeatured_$i"}->sale_price . '
 </bdi>
 </span>
 </ins>
-<br><span class="discount">save '.${"percent$i"}.'%</span></a>
-
+<br><span class="discount">save ' . ${"percent$i"} . '%</span></a>
                             </div>
                         </a>
                     </div>
@@ -540,12 +440,9 @@ for($i = 1; $i <= 6; $i++){
             </li>
     ';
 
+        }
 
-}
-
-echo '       </ul>
-    </div>
-</div>';
+        echo '</ul></div></div>';
 
     }
 

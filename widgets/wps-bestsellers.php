@@ -77,14 +77,14 @@ class Wps_Bestsellers extends \Elementor\Widget_Base
 
     public function get_script_depends()
     {
-        $scripts = ['elementor-wps-addons'];
+        $scripts = ['elementor-wps-bestsellers'];
 
         return $scripts;
     }
 
     public function get_style_depends()
     {
-        $styles = ['elementor-wps-addons'];
+        $styles = ['elementor-wps-bestsellers'];
 
         return $styles;
     }
@@ -115,7 +115,10 @@ class Wps_Bestsellers extends \Elementor\Widget_Base
         $products = wc_get_products($args);
 
         foreach ($products as $product) {
-            $optionProduct[$product->get_id()] = $product->get_id() . ' - ' . $product->get_name();
+
+            if(is_object($product)){
+                $optionProduct[$product->get_id()] = $product->get_id() . ' - ' . $product->get_name();
+            }
         }
 
         foreach ($products as $productVariant) {
@@ -123,11 +126,13 @@ class Wps_Bestsellers extends \Elementor\Widget_Base
                 $variation_ids = $productVariant->get_visible_children();
                 foreach ($variation_ids as $variation_id) {
                     $variation = wc_get_product($variation_id);
-                    $optionProductVariant[$variation_id] = $variation->get_id() . ' - ' . $variation->get_name();
+
+                    if(is_object($variation)){
+                        $optionProductVariant[$variation_id] = $variation->get_id() . ' - ' . $variation->get_name();
+                    }
                 }
             }
         }
-
 
         /**
          * BestSellers
@@ -136,15 +141,36 @@ class Wps_Bestsellers extends \Elementor\Widget_Base
         $this->start_controls_section(
             'section_content',
             [
-                'label' => __('Best sellers', 'elementor-wps-bestsellers'),
+                'label' => __('First tab', 'elementor-wps-bestsellers'),
+            ]
+        );
+
+
+        $this->add_control(
+            'title_1',
+            [
+                'label' => __('Title', 'elementor-wps-bestsellers'),
+                'type' => \Elementor\Controls_Manager::TEXT,
+                'default' => __('Best Sellers', 'elementor-wps-bestsellers'),
+                'placeholder' => __('Title first tab', 'elementor-wps-bestsellers'),
             ]
         );
 
         $this->add_control(
-            'important_note_1_0',
+            'title_1_color',
             [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('Specify products to display on the best sellers tab', 'elementor-wps-bestsellers'),
+                'label' => __('Title color', 'elementor-wps-bestsellers'),
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'default' => '#000000',
+            ]
+        );
+
+        $this->add_control(
+            'title_1_color_selected',
+            [
+                'label' => __('Title color selected', 'elementor-wps-bestsellers'),
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'default' => '#000000',
             ]
         );
 
@@ -155,233 +181,100 @@ class Wps_Bestsellers extends \Elementor\Widget_Base
             ]
         );
 
-        $this->add_control(
-            'important_note_1',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('Select first product or variant', 'elementor-wps-bestsellers'),
-            ]
-        );
+        for ($i = 1; $i <= 4; $i++) {
 
-        $this->add_control(
-            'id_product_1',
-            [
-                'label' => __('Select product 1', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProduct,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'important_note_' . $i,
+                [
+                    'type' => \Elementor\Controls_Manager::RAW_HTML,
+                    'raw' => __('Select ' . $i . ' product or variant', 'elementor-wps-bestsellers'),
+                ]
+            );
 
-        $this->add_control(
-            'or_note_1',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('OR', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'id_product_' . $i,
+                [
+                    'label' => __('Select product ' . $i, 'elementor-wps-bestsellers'),
+                    'type' => Controls_Manager::SELECT2,
+                    'options' => $optionProduct,
+                    'default' => __('Empty', 'elementor-wps-bestsellers'),
+                ]
+            );
 
-        $this->add_control(
-            'id_variant_1',
-            [
-                'label' => __('Select variant 1', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductVariant,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'or_note_' . $i,
+                [
+                    'type' => \Elementor\Controls_Manager::RAW_HTML,
+                    'raw' => __('OR', 'elementor-wps-bestsellers'),
+                ]
+            );
 
-        $this->add_control(
-            'id_product_1_color',
-            [
-                'label' => __('Select color button', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => [
-                    'ffffff' => 'white',
-                    '000000' => 'black',
-                    '795a78' => 'purple',
-                    '276699' => 'blue',
-                ],
-                'default' => __('000000', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'id_variant_' . $i,
+                [
+                    'label' => __('Select variant ' . $i, 'elementor-wps-bestsellers'),
+                    'type' => Controls_Manager::SELECT2,
+                    'options' => $optionProductVariant,
+                    'default' => __('Empty', 'elementor-wps-bestsellers'),
+                ]
+            );
 
-        $this->add_control(
-            'hr2',
-            [
-                'type' => \Elementor\Controls_Manager::DIVIDER,
-            ]
-        );
+            $this->add_control(
+                'id_product_sale_' . $i,
+                [
+                    'label' => __('Sale price over ' . $i, 'elementor-wps'),
+                    'type' => \Elementor\Controls_Manager::TEXT,
+                ]
+            );
 
+            $this->add_control(
+                'id_product_color_button_' . $i,
+                [
+                    'label' => __('Select color button', 'elementor-wps-bestsellers'),
+                    'type' => Controls_Manager::SELECT,
+                    'options' => [
+                        '301A46' => 'standart', 'ffffff' => 'white',
+                        '000000' => 'black',
+                        '795a78' => 'purple',
+                        '276699' => 'blue',
+                    ],
+                    'default' => __('301A46', 'elementor-wps-bestsellers'),
+                ]
+            );
 
-        $this->add_control(
-            'important_note_2',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('Select second product or variant', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'id_product_color_background_' . $i,
+                [
+                    'label' => __('Select color background', 'elementor-wps-bestsellers'),
+                    'type' => \Elementor\Controls_Manager::COLOR,
+                    'default' => '#ffffff',
+                ]
+            );
 
-        $this->add_control(
-            'id_product_2',
-            [
-                'label' => __('Select product 2', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProduct,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'id_product_title_' . $i,
+                [
+                    'label' => __('Title product ' . $i, 'elementor-wps'),
+                    'type' => \Elementor\Controls_Manager::TEXTAREA,
+                ]
+            );
 
-        $this->add_control(
-            'or_note_2',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('OR', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'id_product_image_' . $i,
+                [
+                    'label' => __('Choose Image for product ' . $i, 'elementor-wps'),
+                    'type' => \Elementor\Controls_Manager::MEDIA,
+                ]
+            );
 
-        $this->add_control(
-            'id_variant_2',
-            [
-                'label' => __('Select variant 2', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductVariant,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'hr' . $i,
+                [
+                    'type' => \Elementor\Controls_Manager::DIVIDER,
+                ]
+            );
 
-        $this->add_control(
-            'id_product_2_color',
-            [
-                'label' => __('Select color button', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => [
-                    'ffffff' => 'white',
-                    '000000' => 'black',
-                    '795a78' => 'purple',
-                    '276699' => 'blue',
-                ],
-                'default' => __('000000', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'hr3',
-            [
-                'type' => \Elementor\Controls_Manager::DIVIDER,
-            ]
-        );
-
-
-        $this->add_control(
-            'important_note_3',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('Select the third product or variant', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_product_3',
-            [
-                'label' => __('Select product 3', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProduct,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'or_note_3',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('OR', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_variant_3',
-            [
-                'label' => __('Select variant 3', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductVariant,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_product_3_color',
-            [
-                'label' => __('Select color button', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => [
-                    'ffffff' => 'white',
-                    '000000' => 'black',
-                    '795a78' => 'purple',
-                    '276699' => 'blue',
-                ],
-                'default' => __('000000', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'hr4',
-            [
-                'type' => \Elementor\Controls_Manager::DIVIDER,
-            ]
-        );
-
-
-        $this->add_control(
-            'important_note_4',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('Select the fourth product or variant', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_product_4',
-            [
-                'label' => __('Select product 4', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProduct,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'or_note_4',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('OR', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_variant_4',
-            [
-                'label' => __('Select variant 4', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductVariant,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_product_4_color',
-            [
-                'label' => __('Select color button', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => [
-                    'ffffff' => 'white',
-                    '000000' => 'black',
-                    '795a78' => 'purple',
-                    '276699' => 'blue',
-                ],
-                'default' => __('000000', 'elementor-wps-bestsellers'),
-            ]
-        );
+        }
 
         $this->end_controls_section();
 
@@ -393,15 +286,35 @@ class Wps_Bestsellers extends \Elementor\Widget_Base
         $this->start_controls_section(
             'section_content_new_arrivals',
             [
-                'label' => __('New Arrivals', 'elementor-wps-bestsellers'),
+                'label' => __('Second tab', 'elementor-wps-bestsellers'),
             ]
         );
 
         $this->add_control(
-            'important_note_1_0_new_arrivals',
+            'title_2',
             [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('Specify products to display on the new arrivals tab', 'elementor-wps-bestsellers'),
+                'label' => __('Title', 'elementor-wps-bestsellers'),
+                'type' => \Elementor\Controls_Manager::TEXT,
+                'default' => __('New arrivals', 'elementor-wps-bestsellers'),
+                'placeholder' => __('Title second tab', 'elementor-wps-bestsellers'),
+            ]
+        );
+
+        $this->add_control(
+            'title_2_color',
+            [
+                'label' => __('Title color', 'elementor-wps-bestsellers'),
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'default' => '#000000',
+            ]
+        );
+
+        $this->add_control(
+            'title_2_color_selected',
+            [
+                'label' => __('Title color selected', 'elementor-wps-bestsellers'),
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'default' => '#000000',
             ]
         );
 
@@ -412,233 +325,98 @@ class Wps_Bestsellers extends \Elementor\Widget_Base
             ]
         );
 
-        $this->add_control(
-            'important_note_1_new_arrivals',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('Select first product or variant', 'elementor-wps-bestsellers'),
-            ]
-        );
+        for ($pna = 1; $pna <= 4; $pna++) {
+            $this->add_control(
+                'important_note_new_arrivals_' . $pna,
+                [
+                    'type' => \Elementor\Controls_Manager::RAW_HTML,
+                    'raw' => __('Select ' . $pna . ' product or variant', 'elementor-wps-bestsellers'),
+                ]
+            );
 
-        $this->add_control(
-            'id_product_1_new_arrivals',
-            [
-                'label' => __('Select product 1', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProduct,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'id_product_new_arrivals_' . $pna,
+                [
+                    'label' => __('Select product ' . $pna, 'elementor-wps-bestsellers'),
+                    'type' => Controls_Manager::SELECT2,
+                    'options' => $optionProduct,
+                    'default' => __('Empty', 'elementor-wps-bestsellers'),
+                ]
+            );
 
-        $this->add_control(
-            'or_note_1_new_arrivals',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('OR', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'or_note_new_arrivals_' . $pna,
+                [
+                    'type' => \Elementor\Controls_Manager::RAW_HTML,
+                    'raw' => __('OR', 'elementor-wps-bestsellers'),
+                ]
+            );
 
-        $this->add_control(
-            'id_variant_1_new_arrivals',
-            [
-                'label' => __('Select variant 1', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductVariant,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'id_variant_new_arrivals_' . $pna,
+                [
+                    'label' => __('Select variant '. $pna, 'elementor-wps-bestsellers'),
+                    'type' => Controls_Manager::SELECT2,
+                    'options' => $optionProductVariant,
+                    'default' => __('Empty', 'elementor-wps-bestsellers'),
+                ]
+            );
 
-        $this->add_control(
-            'id_product_1_color_new_arrivals',
-            [
-                'label' => __('Select color button', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => [
-                    'ffffff' => 'white',
-                    '000000' => 'black',
-                    '795a78' => 'purple',
-                    '276699' => 'blue',
-                ],
-                'default' => __('000000', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'id_product_sale_new_arrivals_' . $pna,
+                [
+                    'label' => __('Sale price over ' . $pna, 'elementor-wps'),
+                    'type' => \Elementor\Controls_Manager::TEXT,
+                ]
+            );
 
-        $this->add_control(
-            'hr2_new_arrivals',
-            [
-                'type' => \Elementor\Controls_Manager::DIVIDER,
-            ]
-        );
+            $this->add_control(
+                'id_product_color_button_new_arrivals_' . $pna,
+                [
+                    'label' => __('Select color button', 'elementor-wps-bestsellers'),
+                    'type' => Controls_Manager::SELECT,
+                    'options' => [
+                        '301A46' => 'standart', 'ffffff' => 'white',
+                        '000000' => 'black',
+                        '795a78' => 'purple',
+                        '276699' => 'blue',
+                    ],
+                    'default' => __('301A46', 'elementor-wps-bestsellers'),
+                ]
+            );
 
+            $this->add_control(
+                'id_product_color_background_new_arrivals_' . $pna,
+                [
+                    'label' => __('Select color background', 'elementor-wps-bestsellers'),
+                    'type' => \Elementor\Controls_Manager::COLOR,
+                    'default' => '#ffffff',
+                ]
+            );
 
-        $this->add_control(
-            'important_note_2_new_arrivals',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('Select second product or variant', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'id_product_title_new_arrivals_' . $pna,
+                [
+                    'label' => __('Title product ' . $pna, 'elementor-wps'),
+                    'type' => \Elementor\Controls_Manager::TEXTAREA,
+                ]
+            );
 
-        $this->add_control(
-            'id_product_2_new_arrivals',
-            [
-                'label' => __('Select product 2', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProduct,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'id_product_image_new_arrivals_' . $pna,
+                [
+                    'label' => __('Choose Image for product ' . $pna, 'elementor-wps'),
+                    'type' => \Elementor\Controls_Manager::MEDIA,
+                ]
+            );
 
-        $this->add_control(
-            'or_note_2_new_arrivals',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('OR', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_variant_2_new_arrivals',
-            [
-                'label' => __('Select variant 2', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductVariant,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_product_2_color_new_arrivals',
-            [
-                'label' => __('Select color button', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => [
-                    'ffffff' => 'white',
-                    '000000' => 'black',
-                    '795a78' => 'purple',
-                    '276699' => 'blue',
-                ],
-                'default' => __('000000', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'hr3_new_arriwals',
-            [
-                'type' => \Elementor\Controls_Manager::DIVIDER,
-            ]
-        );
-
-
-        $this->add_control(
-            'important_note_3_new_arrivals',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('Select the third product or variant', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_product_3_new_arrivals',
-            [
-                'label' => __('Select product 3', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProduct,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'or_note_3_new_arrivals',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('OR', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_variant_3_new_arrivals',
-            [
-                'label' => __('Select variant 3', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductVariant,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_product_3_color_new_arrivals',
-            [
-                'label' => __('Select color button', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => [
-                    'ffffff' => 'white',
-                    '000000' => 'black',
-                    '795a78' => 'purple',
-                    '276699' => 'blue',
-                ],
-                'default' => __('000000', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'hr4_new_arrivals',
-            [
-                'type' => \Elementor\Controls_Manager::DIVIDER,
-            ]
-        );
-
-
-        $this->add_control(
-            'important_note_4_new_arrivals',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('Select the fourth product or variant', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_product_4_new_arrivals',
-            [
-                'label' => __('Select product 4', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProduct,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'or_note_4_new_arrivals',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('OR', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_variant_4_new_arrivals',
-            [
-                'label' => __('Select variant 4', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductVariant,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_product_4_color_new_arrivals',
-            [
-                'label' => __('Select color button', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => [
-                    'ffffff' => 'white',
-                    '000000' => 'black',
-                    '795a78' => 'purple',
-                    '276699' => 'blue',
-                ],
-                'default' => __('000000', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'hr_new_arrivals' . $pna,
+                [
+                    'type' => \Elementor\Controls_Manager::DIVIDER,
+                ]
+            );
+        }
 
         $this->end_controls_section();
 
@@ -650,15 +428,35 @@ class Wps_Bestsellers extends \Elementor\Widget_Base
         $this->start_controls_section(
             'section_content_clearance',
             [
-                'label' => __('Clearance', 'elementor-wps-bestsellers'),
+                'label' => __('Third tab ', 'elementor-wps-bestsellers'),
             ]
         );
 
         $this->add_control(
-            'important_note_1_0_clearance',
+            'title_3',
             [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('Specify products to display on the Clearance tab', 'elementor-wps-bestsellers'),
+                'label' => __('Title', 'elementor-wps-bestsellers'),
+                'type' => \Elementor\Controls_Manager::TEXT,
+                'default' => __('Clearance', 'elementor-wps-bestsellers'),
+                'placeholder' => __('Title third tab', 'elementor-wps-bestsellers'),
+            ]
+        );
+
+        $this->add_control(
+            'title_3_color',
+            [
+                'label' => __('Title color', 'elementor-wps-bestsellers'),
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'default' => '#000000',
+            ]
+        );
+
+        $this->add_control(
+            'title_3_color_selected',
+            [
+                'label' => __('Title color selected', 'elementor-wps-bestsellers'),
+                'type' => \Elementor\Controls_Manager::COLOR,
+                'default' => '#000000',
             ]
         );
 
@@ -669,233 +467,98 @@ class Wps_Bestsellers extends \Elementor\Widget_Base
             ]
         );
 
-        $this->add_control(
-            'important_note_1_clearance',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('Select first product or variant', 'elementor-wps-bestsellers'),
-            ]
-        );
+        for ($pc = 1; $pc <= 4; $pc++) {
+            $this->add_control(
+                'important_note_clearance_' . $pc,
+                [
+                    'type' => \Elementor\Controls_Manager::RAW_HTML,
+                    'raw' => __('Select ' . $pc . ' product or variant', 'elementor-wps-bestsellers'),
+                ]
+            );
 
-        $this->add_control(
-            'id_product_1_clearance',
-            [
-                'label' => __('Select product 1', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProduct,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'id_product_clearance_' . $pc,
+                [
+                    'label' => __('Select product ' . $pc, 'elementor-wps-bestsellers'),
+                    'type' => Controls_Manager::SELECT2,
+                    'options' => $optionProduct,
+                    'default' => __('Empty', 'elementor-wps-bestsellers'),
+                ]
+            );
 
-        $this->add_control(
-            'or_note_1_clearance',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('OR', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'or_note_clearance_' . $pc,
+                [
+                    'type' => \Elementor\Controls_Manager::RAW_HTML,
+                    'raw' => __('OR', 'elementor-wps-bestsellers'),
+                ]
+            );
 
-        $this->add_control(
-            'id_variant_1_clearance',
-            [
-                'label' => __('Select variant 1', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductVariant,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'id_variant_clearance_' . $pc,
+                [
+                    'label' => __('Select variant ' . $pc, 'elementor-wps-bestsellers'),
+                    'type' => Controls_Manager::SELECT2,
+                    'options' => $optionProductVariant,
+                    'default' => __('Empty', 'elementor-wps-bestsellers'),
+                ]
+            );
 
-        $this->add_control(
-            'id_product_1_color_clearance',
-            [
-                'label' => __('Select color button', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => [
-                    'ffffff' => 'white',
-                    '000000' => 'black',
-                    '795a78' => 'purple',
-                    '276699' => 'blue',
-                ],
-                'default' => __('000000', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'id_product_sale_clearance_' . $pc,
+                [
+                    'label' => __('Sale price over ' . $pc, 'elementor-wps'),
+                    'type' => \Elementor\Controls_Manager::TEXT,
+                ]
+            );
 
-        $this->add_control(
-            'hr2_clearance',
-            [
-                'type' => \Elementor\Controls_Manager::DIVIDER,
-            ]
-        );
+            $this->add_control(
+                'id_product_color_button_clearance_' . $pc,
+                [
+                    'label' => __('Select color button', 'elementor-wps-bestsellers'),
+                    'type' => Controls_Manager::SELECT,
+                    'options' => [
+                        '301A46' => 'standart', 'ffffff' => 'white',
+                        '000000' => 'black',
+                        '795a78' => 'purple',
+                        '276699' => 'blue',
+                    ],
+                    'default' => __('301A46', 'elementor-wps-bestsellers'),
+                ]
+            );
 
+            $this->add_control(
+                'id_product_color_background_clearance_' . $pc,
+                [
+                    'label' => __('Select color backgorund', 'elementor-wps-bestsellers'),
+                    'type' => \Elementor\Controls_Manager::COLOR,
+                    'default' => '#ffffff',
+                ]
+            );
 
-        $this->add_control(
-            'important_note_2_clearance',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('Select second product or variant', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'id_product_title_clearance_' . $pc,
+                [
+                    'label' => __('Title product ' . $pc, 'elementor-wps'),
+                    'type' => \Elementor\Controls_Manager::TEXTAREA,
+                ]
+            );
 
-        $this->add_control(
-            'id_product_2_clearance',
-            [
-                'label' => __('Select product 2', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProduct,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'id_product_image_clearance_' . $pc,
+                [
+                    'label' => __('Choose Image for product ' . $pc, 'elementor-wps'),
+                    'type' => \Elementor\Controls_Manager::MEDIA,
+                ]
+            );
 
-        $this->add_control(
-            'or_note_2_clearance',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('OR', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_variant_2_clearance',
-            [
-                'label' => __('Select variant 2', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductVariant,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_product_2_color_clearance',
-            [
-                'label' => __('Select color button', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => [
-                    'ffffff' => 'white',
-                    '000000' => 'black',
-                    '795a78' => 'purple',
-                    '276699' => 'blue',
-                ],
-                'default' => __('000000', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'hr3_clearance',
-            [
-                'type' => \Elementor\Controls_Manager::DIVIDER,
-            ]
-        );
-
-
-        $this->add_control(
-            'important_note_3_clearance',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('Select the third product or variant', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_product_3_clearance',
-            [
-                'label' => __('Select product 3', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProduct,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'or_note_3_clearance',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('OR', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_variant_3_clearance',
-            [
-                'label' => __('Select variant 3', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductVariant,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_product_3_color_clearance',
-            [
-                'label' => __('Select color button', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => [
-                    'ffffff' => 'white',
-                    '000000' => 'black',
-                    '795a78' => 'purple',
-                    '276699' => 'blue',
-                ],
-                'default' => __('000000', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'hr4_clearance',
-            [
-                'type' => \Elementor\Controls_Manager::DIVIDER,
-            ]
-        );
-
-
-        $this->add_control(
-            'important_note_4_clearance',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('Select the fourth product or variant', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_product_4_clearance',
-            [
-                'label' => __('Select product 4', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProduct,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'or_note_4_clearance',
-            [
-                'type' => \Elementor\Controls_Manager::RAW_HTML,
-                'raw' => __('OR', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_variant_4_clearance',
-            [
-                'label' => __('Select variant 4', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => $optionProductVariant,
-                'default' => __('Empty', 'elementor-wps-bestsellers'),
-            ]
-        );
-
-        $this->add_control(
-            'id_product_4_color_clearance',
-            [
-                'label' => __('Select color button', 'elementor-wps-bestsellers'),
-                'type' => Controls_Manager::SELECT,
-                'options' => [
-                    'ffffff' => 'white',
-                    '000000' => 'black',
-                    '795a78' => 'purple',
-                    '276699' => 'blue',
-                ],
-                'default' => __('000000', 'elementor-wps-bestsellers'),
-            ]
-        );
+            $this->add_control(
+                'hr' . $pc . '_clearance',
+                [
+                    'type' => \Elementor\Controls_Manager::DIVIDER,
+                ]
+            );
+        }
 
         $this->end_controls_section();
 
@@ -913,120 +576,130 @@ class Wps_Bestsellers extends \Elementor\Widget_Base
     protected function render()
     {
         $settings = $this->get_settings_for_display();
-
+        $countProduct = 4;
         /**
-         * Best sellers data
+         * Best sellers data, first tab
          */
-        $idProduct_1 = (!empty($settings['id_product_1']) && $settings['id_product_1'] != 'Empty') ? $settings['id_product_1'] : $settings['id_variant_1'];
-        $idProduct_2 = (!empty($settings['id_product_2']) && $settings['id_product_2'] != 'Empty') ? $settings['id_product_2'] : $settings['id_variant_2'];
-        $idProduct_3 = (!empty($settings['id_product_3']) && $settings['id_product_3'] != 'Empty') ? $settings['id_product_3'] : $settings['id_variant_3'];
-        $idProduct_4 = (!empty($settings['id_product_4']) && $settings['id_product_4'] != 'Empty') ? $settings['id_product_4'] : $settings['id_variant_4'];
+        for ($pbs = 1; $pbs <= $countProduct; $pbs++) {
+            ${"idProduct_$pbs"} = (!empty($settings['id_product_' . $pbs]) && $settings['id_product_' . $pbs] != 'Empty') ? $settings['id_product_' . $pbs] : $settings['id_variant_' . $pbs];
 
-        $product_1 = wc_get_product($idProduct_1);
-        $product_2 = wc_get_product($idProduct_2);
-        $product_3 = wc_get_product($idProduct_3);
-        $product_4 = wc_get_product($idProduct_4);
+            if (!empty(${"idProduct_$pbs"}) && ${"idProduct_$pbs"} != 'Empty') {
+                ${"product$pbs"} = wc_get_product(${"idProduct_$pbs"});
+                ${"productUrl$pbs"} = ${"product$pbs"}->get_permalink();
+                ${"productName$pbs"} = (!empty($settings['id_product_title_' . $pbs])) ? $settings['id_product_title_' . $pbs] : ${"product$pbs"}->name;
+                ${"imageUrl$pbs"} = (!empty($settings['id_product_image_' . $pbs]['url'])) ? $settings['id_product_image_' . $pbs]['url'] : wp_get_attachment_url(${"product$pbs"}->image_id);
+                ${"priceProduct$pbs"} = (!empty(${"product$pbs"}->regular_price)) ? ${"product$pbs"}->regular_price : ${"product$pbs"}->price;
 
-        $productUrl1 = $product_1->get_permalink();
-        $productUrl2 = $product_2->get_permalink();
-        $productUrl3 = $product_3->get_permalink();
-        $productUrl4 = $product_4->get_permalink();
+                /**
+                 * update sale if exist over sale in module
+                 */
+                if ((${"product$pbs"}->sale_price != $settings['id_product_sale_' . $pbs]) &&
+                    !empty($settings['id_product_sale_' . $pbs]) &&
+                    $settings['id_product_sale_' . $pbs] != 0
+                ) {
+                    ${"product$pbs"}->set_sale_price($settings['id_product_sale_' . $pbs]);
+                    ${"product$pbs"}->save();
+                }
 
-        $imageUrl1 = wp_get_attachment_url($product_1->image_id);
-        $imageUrl2 = wp_get_attachment_url($product_2->image_id);
-        $imageUrl3 = wp_get_attachment_url($product_3->image_id);
-        $imageUrl4 = wp_get_attachment_url($product_4->image_id);
+                ${"priceSaleProduct$pbs"} = (!empty(${"product$pbs"}->sale_price)) ? ${"product$pbs"}->sale_price : null;
+                ${"percent$pbs"} = (!empty(${"product$pbs"}->sale_price)) ? (${"priceProduct$pbs"} != 0) ? (100 - ceil(${"product$pbs"}->sale_price * 100 / ${"priceProduct$pbs"})) : null : null;
+            }
 
-        $priceProduct1 = (!empty($product_1->regular_price)) ? $product_1->regular_price : $product_1->price;
-        $priceProduct2 = (!empty($product_2->regular_price)) ? $product_2->regular_price : $product_2->price;
-        $priceProduct3 = (!empty($product_3->regular_price)) ? $product_3->regular_price : $product_3->price;
-        $priceProduct4 = (!empty($product_4->regular_price)) ? $product_4->regular_price : $product_4->price;
-
-        $percent1 = (!empty($product_1->sale_price)) ? ($priceProduct1 != 0) ? ceil($product_1->sale_price * 100 / $priceProduct1) : null : null;
-        $percent2 = (!empty($product_2->sale_price)) ? ($priceProduct2 != 0) ? ceil($product_2->sale_price * 100 / $priceProduct2) : null : null;
-        $percent3 = (!empty($product_3->sale_price)) ? ($priceProduct3 != 0) ? ceil($product_3->sale_price * 100 / $priceProduct3) : null : null;
-        $percent4 = (!empty($product_4->sale_price)) ? ($priceProduct4 != 0) ? ceil($product_4->sale_price * 100 / $priceProduct4) : null : null;
+        }
 
         /**
          * New Arrivals data
          */
-        $idProduct_1_new_arrivals = (!empty($settings['id_product_1_new_arrivals']) && $settings['id_product_1_new_arrivals'] != 'Empty') ? $settings['id_product_1_new_arrivals'] : $settings['id_variant_1_new_arrivals'];
-        $idProduct_2_new_arrivals = (!empty($settings['id_product_2_new_arrivals']) && $settings['id_product_2_new_arrivals'] != 'Empty') ? $settings['id_product_2_new_arrivals'] : $settings['id_variant_2_new_arrivals'];
-        $idProduct_3_new_arrivals = (!empty($settings['id_product_3_new_arrivals']) && $settings['id_product_3_new_arrivals'] != 'Empty') ? $settings['id_product_3_new_arrivals'] : $settings['id_variant_3_new_arrivals'];
-        $idProduct_4_new_arrivals = (!empty($settings['id_product_4_new_arrivals']) && $settings['id_product_4_new_arrivals'] != 'Empty') ? $settings['id_product_4_new_arrivals'] : $settings['id_variant_4_new_arrivals'];
+        for ($pna = 1; $pna <= $countProduct; $pna++) {
+            ${"idProductNewArrivals_$pna"} = (!empty($settings['id_product_new_arrivals_' . $pna]) && $settings['id_product_new_arrivals_' . $pna] != 'Empty') ? $settings['id_product_new_arrivals_' . $pna] : $settings['id_variant_new_arrivals_' . $pna];
 
-        $product_1_new_arrivals = wc_get_product($idProduct_1_new_arrivals);
-        $product_2_new_arrivals = wc_get_product($idProduct_2_new_arrivals);
-        $product_3_new_arrivals = wc_get_product($idProduct_3_new_arrivals);
-        $product_4_new_arrivals = wc_get_product($idProduct_4_new_arrivals);
+            if (!empty(${"idProductNewArrivals_$pna"}) && ${"idProductNewArrivals_$pna"} != 'Empty') {
+                ${"productNewArrivals$pna"} = wc_get_product(${"idProductNewArrivals_$pna"});
+                ${"productUrlNewArrivals$pna"} = ${"productNewArrivals$pna"}->get_permalink();
+                ${"productNameNewArrivals$pna"} = (!empty($settings['id_product_title_new_arrivals_' . $pna])) ? $settings['id_product_title_new_arrivals_' . $pna] : ${"productNewArrivals$pna"}->name;
+                ${"imageUrlNewArrivals$pna"} = (!empty($settings['id_product_image_new_arrivals_' . $pna]['url'])) ? $settings['id_product_image_new_arrivals_' . $pna]['url'] : wp_get_attachment_url(${"productNewArrivals$pna"}->image_id);
+                ${"priceProductNewArrivals$pna"} = (!empty(${"productNewArrivals$pna"}->regular_price)) ? ${"productNewArrivals$pna"}->regular_price : ${"productNewArrivals$pna"}->price;
 
-        $productUrl1_new_arrivals = $product_1_new_arrivals->get_permalink();
-        $productUrl2_new_arrivals = $product_2_new_arrivals->get_permalink();
-        $productUrl3_new_arrivals = $product_3_new_arrivals->get_permalink();
-        $productUrl4_new_arrivals = $product_4_new_arrivals->get_permalink();
+                /**
+                 * update sale if exist over sale in module
+                 */
+                if ((${"productNewArrivals$pna"}->sale_price != $settings['id_product_sale_new_arrivals_' . $pna]) &&
+                    !empty($settings['id_product_sale_new_arrivals_' . $pna]) &&
+                    $settings['id_product_sale_new_arrivals_' . $pna] != 0
+                ) {
+                    ${"productNewArrivals$pna"}->set_sale_price($settings['id_product_sale_new_arrivals_' . $pna]);
+                    ${"productNewArrivals$pna"}->save();
+                }
 
-        $imageUrl1_new_arrivals = wp_get_attachment_url($product_1_new_arrivals->image_id);
-        $imageUrl2_new_arrivals = wp_get_attachment_url($product_2_new_arrivals->image_id);
-        $imageUrl3_new_arrivals = wp_get_attachment_url($product_3_new_arrivals->image_id);
-        $imageUrl4_new_arrivals = wp_get_attachment_url($product_4_new_arrivals->image_id);
+                ${"priceSaleProductNewArrivals$pna"} = (!empty(${"productNewArrivals$pna"}->sale_price)) ? ${"productNewArrivals$pna"}->sale_price : null;
+                ${"percentNewArrivals$pna"} = (!empty(${"productNewArrivals$pna"}->sale_price)) ? (${"priceProductNewArrivals$pna"} != 0) ? (100 - ceil(${"productNewArrivals$pna"}->sale_price * 100 / ${"priceProductNewArrivals$pna"})) : null : null;
+            }
 
-        $priceProduct1_new_arrivals = (!empty($product_1_new_arrivals->regular_price)) ? $product_1_new_arrivals->regular_price : $product_1_new_arrivals->price;
-        $priceProduct2_new_arrivals = (!empty($product_2_new_arrivals->regular_price)) ? $product_2_new_arrivals->regular_price : $product_2_new_arrivals->price;
-        $priceProduct3_new_arrivals = (!empty($product_3_new_arrivals->regular_price)) ? $product_3_new_arrivals->regular_price : $product_3_new_arrivals->price;
-        $priceProduct4_new_arrivals = (!empty($product_4_new_arrivals->regular_price)) ? $product_4_new_arrivals->regular_price : $product_4_new_arrivals->price;
-
-        $percent1_new_arrivals = (!empty($product_1_new_arrivals->sale_price)) ? ($priceProduct1_new_arrivals != 0) ? ceil($product_1_new_arrivals->sale_price * 100 / $priceProduct1_new_arrivals) : null : null;
-        $percent2_new_arrivals = (!empty($product_2_new_arrivals->sale_price)) ? ($priceProduct2_new_arrivals != 0) ? ceil($product_2_new_arrivals->sale_price * 100 / $priceProduct2_new_arrivals) : null : null;
-        $percent3_new_arrivals = (!empty($product_3_new_arrivals->sale_price)) ? ($priceProduct3_new_arrivals != 0) ? ceil($product_3_new_arrivals->sale_price * 100 / $priceProduct3_new_arrivals) : null : null;
-        $percent4_new_arrivals = (!empty($product_4_new_arrivals->sale_price)) ? ($priceProduct4_new_arrivals != 0) ? ceil($product_4_new_arrivals->sale_price * 100 / $priceProduct4_new_arrivals) : null : null;
+        }
 
         /**
          * Clearance data
          */
-        $idProduct_1_clearance = (!empty($settings['id_product_1_clearance']) && $settings['id_product_1_clearance'] != 'Empty') ? $settings['id_product_1_clearance'] : $settings['id_variant_1_clearance'];
-        $idProduct_2_clearance = (!empty($settings['id_product_2_clearance']) && $settings['id_product_2_clearance'] != 'Empty') ? $settings['id_product_2_clearance'] : $settings['id_variant_2_clearance'];
-        $idProduct_3_clearance = (!empty($settings['id_product_3_clearance']) && $settings['id_product_3_clearance'] != 'Empty') ? $settings['id_product_3_clearance'] : $settings['id_variant_3_clearance'];
-        $idProduct_4_clearance = (!empty($settings['id_product_4_clearance']) && $settings['id_product_4_clearance'] != 'Empty') ? $settings['id_product_4_clearance'] : $settings['id_variant_4_clearance'];
+        for ($pc = 1; $pc <= $countProduct; $pc++) {
+            ${"idProductClearance_$pc"} = (!empty($settings['id_product_clearance_' . $pc]) && $settings['id_product_clearance_' . $pc] != 'Empty') ? $settings['id_product_clearance_' . $pc] : $settings['id_variant_clearance_' . $pc];
 
-        $product_1_clearance = wc_get_product($idProduct_1_clearance);
-        $product_2_clearance = wc_get_product($idProduct_2_clearance);
-        $product_3_clearance = wc_get_product($idProduct_3_clearance);
-        $product_4_clearance = wc_get_product($idProduct_4_clearance);
+            if (!empty(${"idProductClearance_$pc"}) && ${"idProductClearance_$pc"} != 'Empty') {
+                ${"productClearance$pc"} = wc_get_product(${"idProductClearance_$pc"});
+                ${"productUrlClearance$pc"} = ${"productClearance$pc"}->get_permalink();
+                ${"productNameClearance$pc"} = (!empty($settings['id_product_title_clearance_' . $pc])) ? $settings['id_product_title_clearance_' . $pc] : ${"productClearance$pc"}->name;
+                ${"imageUrlClearance$pc"} = (!empty($settings['id_product_image_clearance_' . $pc]['url'])) ? $settings['id_product_image_clearance_' . $pc]['url'] : wp_get_attachment_url(${"productClearance$pc"}->image_id);
+                ${"priceProductClearance$pc"} = (!empty(${"productClearance$pc"}->regular_price)) ? ${"productClearance$pc"}->regular_price : ${"productClearance$pc"}->price;
 
-        $productUrl1_clearance = $product_1_clearance->get_permalink();
-        $productUrl2_clearance = $product_2_clearance->get_permalink();
-        $productUrl3_clearance = $product_3_clearance->get_permalink();
-        $productUrl4_clearance = $product_4_clearance->get_permalink();
+                /**
+                 * update sale if exist over sale in module
+                 */
+                if ((${"productClearance$pc"}->sale_price != $settings['id_product_sale_clearance_' . $pc]) &&
+                    !empty($settings['id_product_sale_clearance_' . $pc]) &&
+                    $settings['id_product_sale_clearance_' . $pc] != 0
+                ) {
+                    ${"productClearance$pc"}->set_sale_price($settings['id_product_sale_clearance_' . $pc]);
+                    ${"productClearance$pc"}->save();
+                }
 
-        $imageUrl1_clearance = wp_get_attachment_url($product_1_clearance->image_id);
-        $imageUrl2_clearance = wp_get_attachment_url($product_2_clearance->image_id);
-        $imageUrl3_clearance = wp_get_attachment_url($product_3_clearance->image_id);
-        $imageUrl4_clearance = wp_get_attachment_url($product_4_clearance->image_id);
+                ${"priceSaleProductClearance$pc"} = (!empty(${"productClearance$pc"}->sale_price)) ? ${"productClearance$pc"}->sale_price : null;
+                ${"percentClearance$pc"} = (!empty(${"productClearance$pc"}->sale_price)) ? (${"priceProductClearance$pc"} != 0) ? (100 - ceil(${"productClearance$pc"}->sale_price * 100 / ${"priceProductClearance$pc"})) : null : null;
+            }
 
-        $priceProduct1_clearance = (!empty($product_1_clearance->regular_price)) ? $product_1_clearance->regular_price : $product_1_clearance->price;
-        $priceProduct2_clearance = (!empty($product_2_clearance->regular_price)) ? $product_2_clearance->regular_price : $product_2_clearance->price;
-        $priceProduct3_clearance = (!empty($product_3_clearance->regular_price)) ? $product_3_clearance->regular_price : $product_3_clearance->price;
-        $priceProduct4_clearance = (!empty($product_4_clearance->regular_price)) ? $product_4_clearance->regular_price : $product_4_clearance->price;
+        }
 
-        $percent1_clearance = (!empty($product_1_clearance->sale_price)) ? ($priceProduct1_clearance != 0) ? ceil($product_1_clearance->sale_price * 100 / $priceProduct1_clearance) : null : null;
-        $percent2_clearance = (!empty($product_2_clearance->sale_price)) ? ($priceProduct2_clearance != 0) ? ceil($product_2_clearance->sale_price * 100 / $priceProduct2_clearance) : null : null;
-        $percent3_clearance = (!empty($product_3_clearance->sale_price)) ? ($priceProduct3_clearance != 0) ? ceil($product_3_clearance->sale_price * 100 / $priceProduct3_clearance) : null : null;
-        $percent4_clearance = (!empty($product_4_clearance->sale_price)) ? ($priceProduct4_clearance != 0) ? ceil($product_4_clearance->sale_price * 100 / $priceProduct4_clearance) : null : null;
-
-
-        echo '<div id="wps-bestsellers">
+        echo '
+<style type="text/css">
+    a.best-sellers{
+        color:' . $settings['title_1_color'] . ';
+    }    
+    a.best-sellers.selected{
+        color:' . $settings['title_1_color_selected'] . ';
+    }
+    a.new-arrivals{
+        color:' . $settings['title_2_color'] . ';
+    }
+    a.new-arrivals.selected{
+        color:' . $settings['title_2_color_selected'] . ';
+    }
+    a.clearance{
+        color:' . $settings['title_3_color'] . ';
+    }
+    a.clearance.selected{
+        color:' . $settings['title_3_color_selected'] . ';
+    }
+</style>
+<div id="wps-bestsellers">
     <h2>
-        <a class="best-sellers selected">Best Sellers</a>
-        <a class="new-arrivals">New Arrivals</a>
-        <a class="clearance">Clearance</a>
+        <a class="best-sellers selected">' . $settings['title_1'] . '</a>
+        <a class="new-arrivals">' . $settings['title_2'] . '</a>
+        <a class="clearance"">' . $settings['title_3'] . '</a>
     </h2>
     <section class="best-sellers" style="">
         <header>
-            <h1><a href="/wps-bestsellers">Best Sellers</a></h1>
-            <a class="more" href="/wps-bestsellers">More</a>
+            <h3><a href="/wps-bestsellers">' . $settings['title_1'] . '</a></h3>
         </header>
         <div class="offers">
-            <div class="offer dark" style="background-color:#ffffff;">
+            <div class="offer dark right" style="background-color:' . $settings['id_product_color_background_1'] . ';">
                 <div class="photo">
                     <a href="' . $productUrl1 . '">
                         <img data-src="' . $imageUrl1 . '"
@@ -1037,22 +710,22 @@ class Wps_Bestsellers extends \Elementor\Widget_Base
                 <div class="content">
                     <h2>
                         <a href="' . $productUrl1 . '">
-                            ' . $product_1->name . '
+                            ' . $productName1 . '
                         </a>
                     </h2>
-                    <h3 style="background-color:#' . $settings['id_product_1_color'] . ';">
+                    <h3 style="background-color:#' . $settings['id_product_color_button_1'] . ';">
                         <a href="' . $productUrl1 . '">
                         <span class="list-price">
                             ' . $priceProduct1 . '
                         </span>
-                            <span class="sale-price">' . $product_1->sale_price . '</span>
+                            <span class="sale-price">' . $priceSaleProduct1 . '</span>
                             <span class="discount">save ' . $percent1 . '%</span>
                         </a>
                     </h3>
                 </div>
             </div>
 
-            <div class="offer dark"  style="background-color:#ffffff;">
+            <div class="offer dark"  style="background-color:' . $settings['id_product_color_background_2'] . ';">
                <div class="photo">
                     <a href="' . $productUrl2 . '">
                         <img data-src="' . $imageUrl2 . '"
@@ -1063,15 +736,15 @@ class Wps_Bestsellers extends \Elementor\Widget_Base
                 <div class="content">
                     <h2>
                         <a href="' . $productUrl2 . '">
-                            ' . $product_2->name . '
+                            ' . $productName2 . '
                         </a>
                     </h2>
-                    <h3 style="background-color:#' . $settings['id_product_2_color'] . ';">
+                    <h3 style="background-color:#' . $settings['id_product_color_button_2'] . ';">
                         <a href="' . $productUrl2 . '">
                         <span class="list-price">
                             ' . $priceProduct2 . '
                         </span>
-                            <span class="sale-price">' . $product_2->sale_price . '</span>
+                            <span class="sale-price">' . $priceSaleProduct2 . '</span>
                             <span class="discount">save ' . $percent2 . '%</span>
                         </a>
                     </h3>
@@ -1079,7 +752,7 @@ class Wps_Bestsellers extends \Elementor\Widget_Base
             </div>
 
 
-            <div class="offer dark" style="background-color:#ffffff;">
+            <div class="offer dark" style="background-color:' . $settings['id_product_color_background_3'] . ';">
                <div class="photo">
                     <a href="' . $productUrl3 . '">
                         <img data-src="' . $imageUrl3 . '"
@@ -1090,22 +763,22 @@ class Wps_Bestsellers extends \Elementor\Widget_Base
                 <div class="content">
                     <h2>
                         <a href="' . $product_3->slug . '">
-                            ' . $product_3->name . '
+                            ' . $productName3 . '
                         </a>
                     </h2>
-                    <h3 style="background-color:#' . $settings['id_product_3_color'] . ';">
+                    <h3 style="background-color:#' . $settings['id_product_color_button_3'] . ';">
                         <a href="' . $productUrl3 . '">
                         <span class="list-price">
                             ' . $priceProduct3 . '
                         </span>
-                            <span class="sale-price">' . $product_3->sale_price . '</span>
+                            <span class="sale-price">' . $priceSaleProduct3 . '</span>
                             <span class="discount">save ' . $percent3 . '%</span>
                         </a>
                     </h3>
                 </div>
             </div>
 
-            <div class="offer dark" style="background-color:#ffffff;">
+            <div class="offer dark right" style="background-color:' . $settings['id_product_color_background_4'] . ';">
                <div class="photo">
                     <a href="' . $productUrl4 . '">
                         <img data-src="' . $imageUrl4 . '"
@@ -1115,16 +788,16 @@ class Wps_Bestsellers extends \Elementor\Widget_Base
                 </div>
                 <div class="content">
                     <h2>
-                        <a href="' . $productUrl4. '">
-                            ' . $product_4->name . '
+                        <a href="' . $productUrl4 . '">
+                            ' . $productName4 . '
                         </a>
                     </h2>
-                    <h3 style="background-color:#' . $settings['id_product_4_color'] . ';">
+                    <h3 style="background-color:#' . $settings['id_product_color_button_4'] . ';">
                         <a href="' . $productUrl4 . '">
                         <span class="list-price">
                             ' . $priceProduct4 . '
                         </span>
-                            <span class="sale-price">' . $product_4->sale_price . '</span>
+                            <span class="sale-price">' . $priceSaleProduct4 . '</span>
                             <span class="discount">save ' . $percent4 . '%</span>
                         </a>
                     </h3>
@@ -1135,110 +808,109 @@ class Wps_Bestsellers extends \Elementor\Widget_Base
     
     <section class="new-arrivals" style="display: none;">
         <header>
-            <h1><a href="/wps-bestsellers">Best Sellers</a></h1>
-            <a class="more" href="/wps-bestsellers">More</a>
+            <h3><a href="/wps-bestsellers">' . $settings['title_1'] . '</a></h3>
         </header>
         <div class="offers">
-            <div class="offer dark" style="background-color:#ffffff;">
+            <div class="offer dark" style="background-color:' . $settings['id_product_color_background_new_arrivals_1'] . ';">
                 <div class="photo">
-                    <a href="' . $productUrl1_new_arrivals . '">
-                        <img data-src="' . $imageUrl1_new_arrivals . '"
+                    <a href="' . $productUrlNewArrivals1 . '">
+                        <img data-src="' . $imageUrlNewArrivals1 . '"
                              height="181" width="181"
-                             src="' . $imageUrl1_new_arrivals . '">
+                             src="' . $imageUrlNewArrivals1 . '">
                     </a>
                 </div>
                 <div class="content">
                     <h2>
-                        <a href="' . $productUrl1_new_arrivals . '">
-                            ' . $product_1_new_arrivals->name . '
+                        <a href="' . $productUrlNewArrivals1 . '">
+                            ' . $productNameNewArrivals1 . '
                         </a>
                     </h2>
-                    <h3 style="background-color:#' . $settings['id_product_1_color_new_arrivals'] . ';">
-                        <a href="' . $productUrl1_new_arrivals . '">
+                    <h3 style="background-color:#' . $settings['id_product_color_button_new_arrivals_1'] . ';">
+                        <a href="' . $productUrlNewArrivals1 . '">
                         <span class="list-price">
-                            ' . $priceProduct1_new_arrivals . '
+                            ' . $priceProductNewArrivals1 . '
                         </span>
-                            <span class="sale-price">' . $product_1_new_arrivals->sale_price . '</span>
-                            <span class="discount">save ' . $percent1_new_arrivals . '%</span>
+                            <span class="sale-price">' . $priceSaleProductNewArrivals1 . '</span>
+                            <span class="discount">save ' . $percentNewArrivals1 . '%</span>
                         </a>
                     </h3>
                 </div>
             </div>
 
-            <div class="offer dark"  style="background-color:#ffffff;">
+            <div class="offer dark "  style="background-color:' . $settings['id_product_color_background_new_arrivals_2'] . ';">
                <div class="photo">
-                    <a href="' . $productUrl2_new_arrivals . '">
-                        <img data-src="' . $imageUrl2_new_arrivals . '"
+                    <a href="' . $productUrlNewArrivals2 . '">
+                        <img data-src="' . $imageUrlNewArrivals2 . '"
                              height="181" width="181"
-                             src="' . $imageUrl2_new_arrivals . '">
+                             src="' . $imageUrlNewArrivals2 . '">
                     </a>
                 </div>
                 <div class="content">
                     <h2>
-                        <a href="' . $productUrl2_new_arrivals . '">
-                            ' . $product_2_new_arrivals->name . '
+                        <a href="' . $productUrlNewArrivals2 . '">
+                            ' . $productNameNewArrivals2 . '
                         </a>
                     </h2>
-                    <h3 style="background-color:#' . $settings['id_product_2_color_new_arrivals'] . ';">
-                        <a href="' . $productUrl2_new_arrivals . '">
+                    <h3 style="background-color:#' . $settings['id_product_color_button_new_arrivals_2'] . ';">
+                        <a href="' . $productUrlNewArrivals2 . '">
                         <span class="list-price">
-                            ' . $priceProduct2_new_arrivals . '
+                            ' . $priceProductNewArrivals2 . '
                         </span>
-                            <span class="sale-price">' . $product_2_new_arrivals->sale_price . '</span>
-                            <span class="discount">save ' . $percent2_new_arrivals . '%</span>
+                            <span class="sale-price">' . $priceSaleProductNewArrivals2 . '</span>
+                            <span class="discount">save ' . $percentNewArrivals2 . '%</span>
                         </a>
                     </h3>
                 </div>
             </div>
 
 
-            <div class="offer dark" style="background-color:#ffffff;">
+            <div class="offer dark right" style="background-color:' . $settings['id_product_color_background_new_arrivals_3'] . ';">
                <div class="photo">
-                    <a href="' . $productUrl3_new_arrivals . '">
-                        <img data-src="' . $imageUrl3_new_arrivals . '"
+                    <a href="' . $productUrlNewArrivals3 . '">
+                        <img data-src="' . $imageUrlNewArrivals3 . '"
                              height="181" width="181"
-                             src="' . $imageUrl3_new_arrivals . '">
+                             src="' . $imageUrlNewArrivals3 . '">
                     </a>
                 </div>
                 <div class="content">
                     <h2>
-                        <a href="' . $productUrl3_new_arrivals . '">
-                            ' . $product_3_new_arrivals->name . '
+                        <a href="' . $productUrlNewArrivals3 . '">
+                            ' . $productNameNewArrivals3 . '
                         </a>
                     </h2>
-                    <h3 style="background-color:#' . $settings['id_product_3_color_new_arrivals'] . ';">
-                        <a href="' . $productUrl3_new_arrivals . '">
+                    <h3 style="background-color:#' . $settings['id_product_color_button_new_arrivals_3'] . ';">
+                        <a href="' . $productUrlNewArrivals3 . '">
                         <span class="list-price">
-                            ' . $priceProduct3_new_arrivals . '
+                            ' . $priceProductNewArrivals3 . '
                         </span>
-                            <span class="sale-price">' . $product_3_new_arrivals->sale_price . '</span>
-                            <span class="discount">save ' . $percent3_new_arrivals . '%</span>
+                            <span class="sale-price">' . $priceSaleProductNewArrivals3 . '</span>
+                            <span class="discount">save ' . $percentNewArrivals3 . '%</span>
                         </a>
                     </h3>
                 </div>
             </div>
 
-            <div class="offer dark" style="background-color:#ffffff;">
+            <div class="offer dark right" style="background-color:' . $settings['id_product_color_background_new_arrivals_4'] . ';">
                <div class="photo">
-                    <a href="/' . $productUrl4_new_arrivals . '">
-                        <img data-src="' . $imageUrl4_new_arrivals . '"
+                    <a href="/' . $productUrlNewArrivals4 . '">
+                        <img data-src="' . $imageUrlNewArrivals4 . '"
                              height="181" width="181"
-                             src="' . $imageUrl4_new_arrivals . '">
+                             src="' . $imageUrlNewArrivals4 . '">
                     </a>
                 </div>
                 <div class="content">
                     <h2>
-                        <a href="' . $productUrl4_new_arrivals . '">
-                            ' . $product_4_new_arrivals->name . '
+                        <a href="' . $productUrlNewArrivals4 . '">
+                            ' . $productNameNewArrivals4 . '
                         </a>
                     </h2>
-                    <h3 style="background-color:#' . $settings['id_product_4_color_new_arrivals'] . ';">
-                        <a href="' . $productUrl4_new_arrivals . '">
+                    <h3 style="background-color:#' . $settings['id_product_color_button_new_arrivals_4'] . ';">
+                        <a href="' . $productUrlNewArrivals4 . '">
                         <span class="list-price">
-                            ' . $priceProduct4_new_arrivals . '
+                            ' . $priceProductNewArrivals4 . '
                         </span>
-                            <span class="sale-price">' . $product_4_new_arrivals->sale_price . '</span>
-                            <span class="discount">save ' . $percent4_new_arrivals . '%</span>
+                            <span class="sale-price">' . $priceSaleProductNewArrivals4 . '</span>
+                            <span class="discount">save ' . $percentNewArrivals4 . '%</span>
                         </a>
                     </h3>
                 </div>
@@ -1248,110 +920,109 @@ class Wps_Bestsellers extends \Elementor\Widget_Base
     
     <section class="clearance" style="display: none;">
         <header>
-            <h1><a href="/wps-bestsellers">Best Sellers</a></h1>
-            <a class="more" href="/wps-bestsellers">More</a>
+            <h3><a href="/wps-bestsellers">' . $settings['title_1'] . '</a></h3>
         </header>
         <div class="offers">
-            <div class="offer dark" style="background-color:#ffffff;">
+            <div class="offer dark" style="background-color:' . $settings['id_product_color_background_clearance_1'] . ';">
                 <div class="photo">
-                    <a href="' . $productUrl1_clearance . '">
-                        <img data-src="' . $imageUrl1_clearance . '"
+                    <a href="' . $productUrlClearance1 . '">
+                        <img data-src="' . $imageUrlClearance1 . '"
                              height="181" width="181"
-                             src="' . $imageUrl1_clearance . '">
+                             src="' . $imageUrlClearance1 . '">
                     </a>
                 </div>
                 <div class="content">
                     <h2>
-                        <a href="' . $productUrl1_clearance . '">
-                            ' . $product_1_clearance->name . '
+                        <a href="' . $productUrlClearance1 . '">
+                            ' . $productNameClearance1 . '
                         </a>
                     </h2>
-                    <h3 style="background-color:#' . $settings['id_product_1_color_clearance'] . ';">
-                        <a href="' . $productUrl1_clearance . '">
+                    <h3 style="background-color:#' . $settings['id_product_color_button_clearance_1'] . ';">
+                        <a href="' . $productUrlClearance1 . '">
                         <span class="list-price">
-                            ' . $priceProduct1_clearance . '
+                            ' . $priceProductClearance1 . '
                         </span>
-                            <span class="sale-price">' . $product_1_clearance->sale_price . '</span>
-                            <span class="discount">save ' . $percent1_clearance . '%</span>
+                            <span class="sale-price">' . $priceSaleProductClearance1 . '</span>
+                            <span class="discount">save ' . $percentClearance1 . '%</span>
                         </a>
                     </h3>
                 </div>
             </div>
 
-            <div class="offer dark"  style="background-color:#ffffff;">
+            <div class="offer dark right"  style="background-color:' . $settings['id_product_color_background_clearance_2'] . ';">
                <div class="photo">
-                    <a href="' . $productUrl2_clearance . '">
-                        <img data-src="' . $imageUrl2_clearance . '"
+                    <a href="' . $productUrlClearance2 . '">
+                        <img data-src="' . $imageUrlClearance2 . '"
                              height="181" width="181"
-                             src="' . $imageUrl2_clearance . '">
+                             src="' . $imageUrlClearance2 . '">
                     </a>
                 </div>
                 <div class="content">
                     <h2>
-                        <a href="' . $productUrl2_clearance . '">
-                            ' . $product_2_clearance->name . '
+                        <a href="' . $productUrlClearance2 . '">
+                            ' . $productNameClearance2 . '
                         </a>
                     </h2>
-                    <h3 style="background-color:#' . $settings['id_product_2_color_clearance'] . ';">
-                        <a href="' . $productUrl2_clearance . '">
+                    <h3 style="background-color:#' . $settings['id_product_color_button_clearance_2'] . ';">
+                        <a href="' . $productUrlClearance2 . '">
                         <span class="list-price">
-                            ' . $priceProduct2_clearance . '
+                            ' . $priceProductClearance2 . '
                         </span>
-                            <span class="sale-price">' . $product_2_clearance->sale_price . '</span>
-                            <span class="discount">save ' . $percent2_clearance . '%</span>
+                            <span class="sale-price">' . $priceSaleProductClearance2 . '</span>
+                            <span class="discount">save ' . $percentClearance2 . '%</span>
                         </a>
                     </h3>
                 </div>
             </div>
 
 
-            <div class="offer dark" style="background-color:#ffffff;">
+            <div class="offer dark" style="background-color:' . $settings['id_product_color_background_clearance_3'] . ';">
                <div class="photo">
-                    <a href="' . $productUrl3_clearance . '">
-                        <img data-src="' . $imageUrl3_clearance . '"
+                    <a href="' . $productUrlClearance3 . '">
+                        <img data-src="' . $imageUrlClearance3 . '"
                              height="181" width="181"
-                             src="' . $imageUrl3_clearance . '">
+                             src="' . $imageUrlClearance3 . '">
                     </a>
                 </div>
                 <div class="content">
                     <h2>
-                        <a href="' . $productUrl3_clearance . '">
-                            ' . $product_3_clearance->name . '
+                        <a href="' . $productUrlClearance3 . '">
+                            ' . $productNameClearance3 . '
                         </a>
                     </h2>
-                    <h3 style="background-color:#' . $settings['id_product_3_color_clearance'] . ';">
-                        <a href="' . $productUrl3_clearance . '">
+                    <h3 style="background-color:#' . $settings['id_product_color_button_clearance_3'] . ';">
+                        <a href="' . $productUrlClearance3 . '">
                         <span class="list-price">
-                            ' . $priceProduct3_clearance . '
+                            ' . $priceProductClearance3 . '
                         </span>
-                            <span class="sale-price">' . $product_3_clearance->sale_price . '</span>
-                            <span class="discount">save ' . $percent3_clearance . '%</span>
+                            <span class="sale-price">' . $priceSaleProductClearance3 . '</span>
+                            <span class="discount">save ' . $percentClearance3 . '%</span>
                         </a>
                     </h3>
                 </div>
             </div>
 
-            <div class="offer dark" style="background-color:#ffffff;">
+            <div class="offer dark right" style="background-color:' . $settings['id_product_color_background_clearance_4'] . ';">
                <div class="photo">
-                    <a href="' . $productUrl4_clearance . '">
-                        <img data-src="' . $imageUrl4_clearance . '"
+                    <a href="' . $productUrlClearance4 . '">
+                        <img data-src="' . $imageUrlClearance4 . '"
                              height="181" width="181"
-                             src="' . $imageUrl4_clearance . '">
+                             src="' . $imageUrlClearance4 . '">
                     </a>
                 </div>
                 <div class="content">
                     <h2>
-                        <a href="' . $productUrl4_clearance . '">
-                            ' . $product_4_clearance->name . '
+                        <a href="' . $productUrlClearance4 . '">
+                            ' . $productNameClearance4 . '
                         </a>
                     </h2>
-                    <h3 style="background-color:#' . $settings['id_product_4_color_clearance'] . ';">
-                        <a href="' . $productUrl4_clearance . '">
+                    <h3 style="background-color:#' . $settings['id_product_color_button_clearance_4'] . ';">
+                        <a href="' . $productUrlClearance4 . '">
                         <span class="list-price">
-                            ' . $priceProduct4_clearance . '
+                            ' . $priceProductClearance4 . '
                         </span>
-                            <span class="sale-price">' . $product_4_clearance->sale_price . '</span>
-                            <span class="discount">save ' . $percent4_clearance . '%</span>
+                            <span class="sale-price">' . $priceSaleProductClearance4 . '</span>
+                            <span class="discount">save ' . $percentClearance4 . '%</span>
                         </a>
                     </h3>
                 </div>
